@@ -60,7 +60,50 @@ const Article = mongoose.model("Article", articleSchema);
 // });
 
 
-app.get("/articles", function(req, res) {
+// app.get("/articles", function(req, res) {
+//     Article.find({}, function(err, foundArticles) {
+//         if(err) {
+//             res.send(err);
+//         } else {
+//             res.send(foundArticles);
+//         }
+//     });
+    
+// });
+
+// app.post("/articles", function(req, res) {
+
+//     const newArticle = new Article ( {
+//         title: req.body.title,
+//         content: req.body.content
+//     });
+
+//     newArticle.save(function(err) {
+//         if(!err) {
+//             res.send("Successfully added a new article.");
+//         } else {
+//             res.send(err);
+//         }
+//     });
+// });
+
+// app.delete("/articles", function(req, res) {
+//     Article.deleteMany({}, function(err){
+//         if(err) {
+//             res.send(err)
+//         } else {
+//             res.send("Deletion successfull");
+//         }
+//     });
+// });
+
+/*
+ * Requests targetting all articles /////////////////////////////////////////////////
+ *
+ */
+
+app.route("/articles")
+.get(function(req, res) {
     Article.find({}, function(err, foundArticles) {
         if(err) {
             res.send(err);
@@ -69,9 +112,8 @@ app.get("/articles", function(req, res) {
         }
     });
     
-});
-
-app.post("/articles", function(req, res) {
+})
+.post(function(req, res) {
 
     const newArticle = new Article ( {
         title: req.body.title,
@@ -83,6 +125,71 @@ app.post("/articles", function(req, res) {
             res.send("Successfully added a new article.");
         } else {
             res.send(err);
+        }
+    });
+})
+.delete(function(req, res) {
+    Article.deleteMany({}, function(err){
+        if(err) {
+            res.send(err)
+        } else {
+            res.send("Deletion successfull");
+        }
+    });
+});
+
+/*
+ * Requests targetting a specific articles /////////////////////////////////////////////////
+ *
+ */
+
+app.route("/articles/:articleTitle")
+.get(function(req, res) {
+    Article.findOne({title: req.params.articleTitle}, function(err, foundArticle) {
+        if(err) {
+            res.send(err);
+        } else {
+            if(foundArticle) {
+                res.send(foundArticle);
+            } else {
+                res.send("No matching article found.");
+            }
+        }
+    });
+})
+.put(function(req, res) { // Put method replaces the entire document.
+    Article.update(
+        {title: req.params.articleTitle}, // Which document to update.
+        {title: req.body.title, content: req.body.content}, // What to update.
+        {overwrite: true}, 
+        function(err){
+            if(err){
+                res.send(err);
+            } else {
+                res.send("Update successfull");
+            }
+        }
+    );
+})
+.patch(function(req, res) { // Update the fileds passed to body.
+    Article.update(
+        {title: req.params.articleTitle},
+        {$set: req.body},
+        function(err) {
+            if(err) {
+                res.send(err);
+            } else {
+                res.send("Update successfull.")
+            }
+        }
+    );
+})
+.delete(function(req, res) {
+    Article.deleteOne({title: req.params.articleTitle}, function(err) {
+        if(err) {
+            res.send(err);
+        } else {
+            res.send("Deletion seccessfull.")
         }
     });
 });
